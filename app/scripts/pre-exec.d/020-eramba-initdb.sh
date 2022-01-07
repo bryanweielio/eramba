@@ -17,7 +17,7 @@ echo "[i] Waiting for database to setup..."
 for i in $(seq 1 1 $MAXTRIES)
 do
 	echo "[i] Trying to connect to database: try $i..."
-	mysql -B --connect-timeout=1 -h db -u $DB_ENV_MYSQL_USER $DBPWOPT -e "SELECT VERSION();" $DB_ENV_MYSQL_DATABASE 
+	mysql -B --connect-timeout=1 -h $DB_ENV_MYSQL_HOST -u $DB_ENV_MYSQL_USER $DBPWOPT -e "SELECT VERSION();" $DB_ENV_MYSQL_DATABASE 
 
 	if [ "$?" = "0" ]; then
 		echo "[i] Successfully connected to database!"
@@ -36,7 +36,7 @@ done
 DBEMPTY=0
 check4mysql () {
 	echo "[i] Checking if database is empty..."
-	LISTTABLES=`(mysql -B -h db -u $DB_ENV_MYSQL_USER $DBPWOPT -e "SHOW TABLES;" $DB_ENV_MYSQL_DATABASE )`
+	LISTTABLES=`(mysql -B -h $DB_ENV_MYSQL_HOST -u $DB_ENV_MYSQL_USER $DBPWOPT -e "SHOW TABLES;" $DB_ENV_MYSQL_DATABASE )`
 	if [ "$?" = "0" ]; then
 		NUMTABLES=`( echo "$LISTTABLES" | wc -l )`
 		# echo "[i] Tables: $NUMTABLES"
@@ -80,7 +80,7 @@ class DATABASE_CONFIG {
         public \$default = array(
                 'datasource' => 'Database/Mysql',
                 'persistent' => false,
-                'host' => 'db',
+                'host' => '$DB_ENV_MYSQL_HOST',
                 'login' => '$DB_ENV_MYSQL_USER',
                 'password' => '$DB_ENV_MYSQL_PASSWORD',
                 'database' => '$DB_ENV_MYSQL_DATABASE',
@@ -96,7 +96,7 @@ EOF
 		for f in /app/app/Config/db_schema/*.sql
 		do
 			echo "[i] Running SQL file $f"
-			mysql -h db -u root -p$DB_ENV_MYSQL_ROOT_PASSWORD $DB_ENV_MYSQL_DATABASE < $f
+			mysql -h $DB_ENV_MYSQL_HOST -u root -p$DB_ENV_MYSQL_ROOT_PASSWORD $DB_ENV_MYSQL_DATABASE < $f
 		done
 	else
 		echo "[i] Database not empty. Not touching it!"
